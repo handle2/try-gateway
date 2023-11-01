@@ -1,0 +1,40 @@
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - TokenRelay
+      routes:
+        - id: fileuploader-resource-server
+          uri: http://localhost:9191
+          predicates:
+            - Path=/file/**
+  security:
+    oauth2:
+      resourceserver:
+        opaquetoken:
+          introspection-uri: http://localhost:8080/auth/realms/TryMeGateway/protocol/openid-connect/token/introspect
+          client-id: gateway-client
+          client-secret: Txe1h9XgwWKdIZUsv6gKKEPSzSDaOlNT
+        jwt:
+          issuer-uri: http://localhost:8080/auth/realms/TryMeGateway
+      client:
+        registration:
+          gateway:
+            provider: keycloak
+            client-id: gateway-client
+            client-secret: Txe1h9XgwWKdIZUsv6gKKEPSzSDaOlNT
+            scope: openid
+            redirect-uri: "http://localhost:9090/login/oauth2/code/gateway"
+        provider:
+          keycloak:
+            user-name-attribute: preferred_username
+            issuer-uri: http://localhost:8080/auth/realms/TryMeGateway
+
+server:
+  port: 9090
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

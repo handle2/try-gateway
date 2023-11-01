@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=keycloak_pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - gateway-network
+
+  keycloak:
+    image: jboss/keycloak:latest
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - DB_VENDOR=POSTGRES
+      - DB_ADDR=postgres
+      - DB_DATABASE=keycloak
+      - DB_USER=keycloak
+      - DB_PASSWORD=keycloak_pass
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - gateway-network
+
+  gateway:
+    image: try-me-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080/auth/
+    ports:
+      - "9090:9090"
+    depends_on:
+      - keycloak
+    networks:
+      - gateway-network
+
+networks:
+  gateway-network:
+    driver: bridge
+
+volumes:
+  pgdata:
